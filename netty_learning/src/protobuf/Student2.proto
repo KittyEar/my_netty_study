@@ -4,14 +4,14 @@ package org.netty.protobuf;
 
 option optimize_for = SPEED;
 option java_package = "org.netty.protobuf";
-option java_outer_classname = "DataInfo";
+option java_outer_classname = "DataInfo1";
 
-message Student_12345{
+message Student_11111{
   required string name = 1;
   optional int32 age = 2;
   optional string address = 3;
 }
-message Student_23456{
+message Student_6666{
   required string name = 1;
   optional int32 age = 2;
   optional string address = 3;

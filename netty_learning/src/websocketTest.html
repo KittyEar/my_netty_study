@@ -16,8 +16,11 @@
         <input type="button" onclick="function del() {document.getElementById('responseText').value=''}" value="clear message">
     </label>
 </form>
-
+<script src="//cdn.jsdelivr.net/npm/protobufjs@7.2.2/dist/protobuf.min.js"></script>
 <script type="text/javascript">
+
+    //----------------------------------------------
+
     let socket;
     let responseText = document.getElementById("responseText");
 
@@ -48,6 +51,89 @@
             alert("连接尚未开启！");
         }
     }
+    // 加载 protobuf 协议文件
+    // 定义Student类型
+    function aa(){
+        const Student = protobuf.Root.fromJSON({
+            nested: {
+                Student: {
+                    fields: {
+                        name: { type: 'string', id: 1 },
+                        age: { type: 'int32', id: 2 },
+                        address: {type: 'string', id :3},
+                    },
+                },
+            },
+        }).lookupType('Student');
+
+        // 创建一个Person对象
+        const person = { name: 'John', age: 30, address: 'USA' };
+
+        // 将Person对象序列化为二进制数据
+        const buffer = Student.encode(person).finish();
+        // 创建 WebSocket 连接
+        const ws = new WebSocket('ws://localhost:8899/websocket');
+
+        // 发送消息
+        const message = { /* 构造你的消息 */ };
+        //const buffer = MyMessage.encode(message).finish();
+        const messageType = '1234'; // 消息类型
+        const payload = new Uint8Array(buffer.byteLength + messageType.length);
+
+        payload.set(new Uint8Array(buffer), messageType.length);
+        for (let i = 0; i < messageType.length; i++) {
+            payload[i] = messageType.charCodeAt(i);
+        }
+        send(createWebSocketFrame(Opcode.BINARY_FRAME, payload));
+    }
+    const Opcode = {
+        CONTINUATION_FRAME: 0x0,
+        TEXT_FRAME: 0x1,
+        BINARY_FRAME: 0x2,
+        CLOSE: 0x8,
+        PING: 0x9,
+        PONG: 0xa,
+    };
+
+    // 封装 WebSocket 帧
+    function createWebSocketFrame(opcode, payload) {
+        const frame = new Uint8Array(payload.byteLength + 2);
+
+        // 第一个字节：FIN + RSV1-3 + Opcode
+        frame[0] = 0x80 | opcode;
+
+        // 第二个字节：MASK + Payload length
+        if (payload.byteLength < 126) {
+            frame[1] = payload.byteLength;
+        } else if (payload.byteLength < 0xffff) {
+            frame[1] = 126;
+            frame[2] = (payload.byteLength >> 8) & 0xff;
+            frame[3] = payload.byteLength & 0xff;
+        } else {
+            frame[1] = 127;
+            frame[2] = (payload.byteLength >> 56) & 0xff;
+            frame[3] = (payload.byteLength >> 48) & 0xff;
+            frame[4] = (payload.byteLength >> 40) & 0xff;
+            frame[5] = (payload.byteLength >> 32) & 0xff;
+            frame[6] = (payload.byteLength >> 24) & 0xff;
+            frame[7] = (payload.byteLength >> 16) & 0xff;
+            frame[8] = (payload.byteLength >> 8) & 0xff;
+            frame[9] = payload.byteLength & 0xff;
+        }
+
+        // 添加 Payload 数据
+        frame.set(new Uint8Array(payload), frame.byteLength - payload.byteLength);
+
+        return frame.buffer;
+    }
+
+    // 接收消息
+    // ws.on('message', (data) => {
+    //     const messageType = data.slice(0, data.indexOf(0)); // 提取消息类型
+    //     const buffer = data.slice(messageType.length + 1);
+    //     const message = MyMessage.decode(buffer); // 解析消息体
+    //     // 处理消息
+    // });
 </script>
 </body>
 </html>
