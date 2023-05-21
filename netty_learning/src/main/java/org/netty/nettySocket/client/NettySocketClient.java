@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 public class NettySocketClient {
     private static void nettySocketClient() {
         EventLoopGroup eventLoopGroup = new NioEventLoopGroup();//客户端只需要一个事件循环组
-
         try {
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(eventLoopGroup).channel(NioSocketChannel.class).handler(new CustomClientInitializer());
