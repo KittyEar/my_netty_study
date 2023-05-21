@@ -71,4 +71,18 @@ public class MessageParser {
         }
         this.messageTypes.forEach((k, v) -> System.out.println(k + ", " + v.getClass().getName()));
     }
+
+    public static void main(String[] args) {
+        // 记录开始时间
+        long startTime = System.currentTimeMillis();
+
+        new MessageParser();
+        // 记录结束时间
+        long endTime = System.currentTimeMillis();
+        // 计算执行时间
+        long executionTime = endTime - startTime;
+
+        // 输出执行时间
+        System.out.println("程序执行时间：" + executionTime + " 毫秒");
+    }
 }
